@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1.7
 FROM python:3.12-slim AS builder
 
 # Prevent Python from writing .pyc files and buffer stdout/err
@@ -29,9 +30,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.t requirements.t
 
 # Explicitly install runtime dependencies (requirements.txt in the repo is binary, so we list them here)
-RUN python -m pip install --no-cache-dir --upgrade pip setuptools wheel \
+RUN --mount=type=bind,from=pip_wheelhouse,source=.,target=/pip_wheelhouse,ro \
+    python -m pip install --no-index --find-links=/pip_wheelhouse --upgrade pip setuptools wheel \
     && mkdir -p /wheels \
-    && python -m pip wheel --no-cache-dir -r requirements.t -w /wheels
+    && python -m pip wheel --no-index --find-links=/pip_wheelhouse -r requirements.t -w /wheels
 
 # 瘦身
 FROM python:3.12-slim AS production
