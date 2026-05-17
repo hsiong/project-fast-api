@@ -16,20 +16,22 @@ def smart_cast(val: str):
         return float(val)
     except ValueError:
         # 去掉包裹引号（防御）
-        if (
-                (val.startswith('"') and val.endswith('"')) or
-                (val.startswith("'") and val.endswith("'"))
+        if (val.startswith('"') and val.endswith('"')) or (
+            val.startswith("'") and val.endswith("'")
         ):
             val = val[1:-1]
         return val
 
 
 def load_env(filepath=".env.dev"):
-    '''
+    """
     加载环境变量
-    '''
-    filepath = f'config/{filepath}'
+    """
+    filepath = f"config/{filepath}"
     os_env_dict = {}
+    print(
+        f"加载环境变量文件: {os.path.abspath(filepath)}"
+    )  # logging配置引用了本文件， 本文件优先级最高，所以使用print
     if not os.path.exists(filepath):
         return
     with open(filepath) as f:
@@ -41,8 +43,8 @@ def load_env(filepath=".env.dev"):
                 line, comment = line.split(" ", 1)
             if "#" in line:
                 line, comment = line.split("#", 1)
-            if '=' in line:
-                key, value = line.split('=', 1)
+            if "=" in line:
+                key, value = line.split("=", 1)
                 os_env_dict[key.strip()] = smart_cast(value)
-    
+
     return os_env_dict
