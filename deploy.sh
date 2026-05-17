@@ -7,10 +7,12 @@ set -eu
 IMAGE_NAME="test"          # 镜像名
 CONTAINER_NAME="test"      # 容器名
 CONFIG_FILE_PATH=".env.prod"
-HOST_PORT="8001"            # 宿主机端口
-CONTAINER_PORT="8001"       # 容器端口（Dockerfile EXPOSE 的）
+HOST_PORT="8000"            # 宿主机端口
+CONTAINER_PORT="8000"       # 容器端口（Dockerfile EXPOSE 的） 固定值
 PROXY_URL=""
-CONTAINER_LOG_PATH="~/code/config/log/${CONTAINER_NAME}/prod"
+
+PIP_CACHE_PATH="${HOME}/.cache/pip"
+PIP_WHEELHOUSE_PATH="${HOME}/.cache/pip-wheelhouse/${IMAGE_NAME}"
 
 # ======================== proxy
 echo "==> [0/5] 设置代理 ${PROXY_URL}"
@@ -45,7 +47,11 @@ else
 fi
 
 echo "==> [3/5] 重新构建镜像: ${IMAGE_NAME}"
-eval docker build --network=host  $BUILD_ARGS .
+mkdir -p "${PIP_CACHE_PATH}"
+mkdir -p "${PIP_WHEELHOUSE_PATH}"
+python -m pip download --cache-dir "${PIP_CACHE_PATH}" --exists-action i pip setuptools wheel -d "${PIP_WHEELHOUSE_PATH}"
+python -m pip download --cache-dir "${PIP_CACHE_PATH}" --exists-action i -r requirements.t -d "${PIP_WHEELHOUSE_PATH}"
+eval DOCKER_BUILDKIT=1 docker build --network=host --build-context pip_wheelhouse="${PIP_WHEELHOUSE_PATH}" $BUILD_ARGS .
 
 echo "==> [4/5] 运行新容器: ${CONTAINER_NAME}"
 # ls -a 看是否挂载
@@ -54,8 +60,11 @@ WORKER_RUN_CMD="docker run -d \
   --restart=always \
   -p ${HOST_PORT}:${CONTAINER_PORT} \
   -e CONFIG_FILE_PATH=${CONFIG_FILE_PATH} \
+  -e LOG_NAME=${CONFIG_FILE_PATH} \
   -v "$(pwd)/config/${CONFIG_FILE_PATH}:/app/config/${CONFIG_FILE_PATH}" \
   -v "${CONTAINER_LOG_PATH}:/app/logs" \
+  -v "${CONTAINER_OUT_PATH}:/app/output" \
+  -v "${BIREFNET_MODEL_PATH}:/app/model/BiRefNet" \
   ${RUN_PROXY_ENV} \
   ${IMAGE_NAME}"
 eval ${WORKER_RUN_CMD}

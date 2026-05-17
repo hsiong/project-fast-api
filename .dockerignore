@@ -1,0 +1,17 @@
+.git
+.idea
+.mvn
+.fastRequest
+.pytest_cache
+__pycache__
+*.py[cod]
+
+.venv
+venv
+env
+
+config/.env*
+model
+file/output
+
+.DS_Store
