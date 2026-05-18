@@ -5,7 +5,7 @@ import time
 from datetime import datetime
 from functools import wraps
 
-from bean.result_bean import Result
+from dto.result_bean import Result
 
 
 def spel_resolve(expr: str, fn_args: dict):
