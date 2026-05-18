@@ -1,11 +1,17 @@
 import json
 import logging
 from types import SimpleNamespace
+from typing import TypeVar
+
+from pydantic import BaseModel
+
+PydanticModelType = TypeVar("PydanticModelType", bound=BaseModel)
+AlchemyEntityType = TypeVar("AlchemyEntityType")
 
 
 def dict_to_bean(obj):
     """
-    将 dict/list 递归转换为支持 bean.a.b.c 的对象
+    将 dict/list 递归转换为支持 dto.a.b.c 的对象
     """
     if isinstance(obj, dict):
         return SimpleNamespace(**{k: dict_to_bean(v) for k, v in obj.items()})
@@ -71,3 +77,17 @@ def clean_to_dict_raise(text: str):
         raise Exception("not dict")
 
     return data
+
+
+def pydantic_to_alchemy(
+    pydantic_model: PydanticModelType,
+    alchemy_entity_class: type[AlchemyEntityType],
+) -> AlchemyEntityType:
+    return alchemy_entity_class(**pydantic_model.model_dump())
+
+
+def alchemy_to_pydantic(
+    alchemy_entity: AlchemyEntityType,
+    pydantic_model_class: type[PydanticModelType],
+) -> PydanticModelType:
+    return pydantic_model_class.model_validate(alchemy_entity)
