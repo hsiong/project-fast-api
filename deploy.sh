@@ -9,7 +9,7 @@ CONTAINER_NAME="test"      # 容器名
 CONFIG_FILE_PATH=".env.prod"
 HOST_PORT="8000"            # 宿主机端口
 CONTAINER_PORT="8000"       # 容器端口（Dockerfile EXPOSE 的） 固定值
-PROXY_URL="172.16.69.222:7897"
+PROXY_URL=""
 
 PIP_CACHE_PATH="${HOME}/.cache/pip"
 PIP_WHEELHOUSE_PATH="${HOME}/.cache/pip-wheelhouse/${IMAGE_NAME}"
