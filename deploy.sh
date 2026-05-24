@@ -9,7 +9,7 @@ CONTAINER_NAME="test"      # 容器名
 CONFIG_FILE_PATH=".env.prod"
 HOST_PORT="8000"            # 宿主机端口
 CONTAINER_PORT="8000"       # 容器端口（Dockerfile EXPOSE 的） 固定值
-PROXY_URL=""
+PROXY_URL="172.16.69.222:7897"
 
 PIP_CACHE_PATH="${HOME}/.cache/pip"
 PIP_WHEELHOUSE_PATH="${HOME}/.cache/pip-wheelhouse/${IMAGE_NAME}"
@@ -55,9 +55,13 @@ eval DOCKER_BUILDKIT=1 docker build --network=host --build-context pip_wheelhous
 
 echo "==> [4/5] 运行新容器: ${CONTAINER_NAME}"
 # ls -a 看是否挂载
+# 共享宿主网络
+# grpc -- weaviate 等, 不能使用    ${RUN_PROXY_ENV} \
+# 只有特殊需要访问外网情况  使用   ${RUN_PROXY_ENV} \
 WORKER_RUN_CMD="docker run -d \
   --name ${CONTAINER_NAME} \
   --restart=always \
+  --network=host  \
   -p ${HOST_PORT}:${CONTAINER_PORT} \
   -e CONFIG_FILE_PATH=${CONFIG_FILE_PATH} \
   -e LOG_NAME=${CONFIG_FILE_PATH} \
@@ -65,7 +69,6 @@ WORKER_RUN_CMD="docker run -d \
   -v "${CONTAINER_LOG_PATH}:/app/logs" \
   -v "${CONTAINER_OUT_PATH}:/app/output" \
   -v "${BIREFNET_MODEL_PATH}:/app/model/BiRefNet" \
-  ${RUN_PROXY_ENV} \
   ${IMAGE_NAME}"
 eval ${WORKER_RUN_CMD}
 echo ">>> ${CONTAINER_NAME} 已启动。"
