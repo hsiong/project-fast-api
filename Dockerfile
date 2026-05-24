@@ -1,19 +1,27 @@
 # syntax=docker/dockerfile:1.7
-FROM python:3.12-slim AS builder
+FROM python:3.12-slim AS base
 
 # Prevent Python from writing .pyc files and buffer stdout/err
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    PATH="/opt/venv/bin:$PATH"
 
 WORKDIR /app
+
+RUN python -m venv /opt/venv
+
+
+FROM base AS packages
 
 # ===== 环境变量：让 apt / uv / pip 都走代理 & 国内源 =====
 ARG HTTP_PROXY
 ARG HTTPS_PROXY
 ARG http_proxy
 ARG https_proxy
-ARG UV_INDEX_URL       # uv 的国内源
-ARG PIP_INDEX_URL      # pip 的国内源（备用）
+# uv 的国内源
+ARG UV_INDEX_URL
+# pip 的国内源（备用）
+ARG PIP_INDEX_URL
 ENV HTTP_PROXY=${HTTP_PROXY}
 ENV HTTPS_PROXY=${HTTPS_PROXY}
 ENV http_proxy=${http_proxy}
@@ -29,21 +37,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     
 COPY requirements.t requirements.t
 
-# Explicitly install runtime dependencies (requirements.txt in the repo is binary, so we list them here)
-RUN --mount=type=bind,from=pip_wheelhouse,source=.,target=/pip_wheelhouse,ro \
-    python -m pip install --no-index --find-links=/pip_wheelhouse --upgrade pip setuptools wheel \
-    && mkdir -p /wheels \
-    && python -m pip wheel --no-index --find-links=/pip_wheelhouse -r requirements.t -w /wheels
+# 安装运行依赖。requirements.t 不变时，这一层会被 Docker 缓存复用。
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --upgrade pip setuptools wheel \
+    && pip install -r requirements.t
 
 # 瘦身
-FROM python:3.12-slim AS production
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
-WORKDIR /app
-# 安装 wheel（不需要编译器）
-COPY --from=builder /wheels /wheels
-RUN python -m pip install --no-cache-dir /wheels/* \
-    && rm -rf /wheels
+FROM base AS production
+
+# 复制 packages 阶段生成的虚拟环境，最终镜像不包含编译器。
+COPY --from=packages /opt/venv /opt/venv
 
 # Copy application source
 COPY . .
@@ -53,6 +56,14 @@ RUN mkdir -p /app/logs
 
 # 与 CONFIG_FILE_PATH - SERVICE_PORT 保持一致
 EXPOSE 8001
+
+# 共用网络, 让宿主机 app的proxy协议 决定是否代理
+ENV http_proxy=""
+ENV https_proxy=""
+ENV all_proxy=""
+ENV HTTP_PROXY=""
+ENV HTTPS_PROXY=""
+ENV ALL_PROXY=""
 
 CMD ["python", "main.py"]
 # CMD ["tail", "-f", "/dev/null"]
