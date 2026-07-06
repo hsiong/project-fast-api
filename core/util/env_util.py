@@ -27,7 +27,7 @@ def load_env(filepath=".env.dev"):
     """
     加载环境变量
     """
-    filepath = f"config/{filepath}"
+    filepath = f"core/config/{filepath}"
     os_env_dict = {}
     print(
         f"加载环境变量文件: {os.path.abspath(filepath)}"
