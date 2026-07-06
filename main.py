@@ -3,10 +3,10 @@
 import uvicorn
 from fastapi import FastAPI
 
-from api.api_test import router as test_router
-from config.settings import SERVICE_PORT
-from core.log import setup_logging
-from core.postgres_init import init_postgres
+from core.api import router as test_router
+from core.config.settings import SERVICE_PORT
+from core.init.log import setup_logging
+from core.init.postgres_init import init_postgres
 
 
 def create_app() -> FastAPI:

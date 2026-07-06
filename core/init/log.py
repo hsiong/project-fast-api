@@ -2,7 +2,7 @@ import logging
 import os
 from logging.handlers import TimedRotatingFileHandler
 
-from config.settings import LOG_PATH, LOG_NAME
+from core.config.settings import LOG_PATH, LOG_NAME
 
 
 def setup_logging() -> None:

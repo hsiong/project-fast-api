@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 import logging
 
-from config.settings import (
+from core.config.settings import (
     POSTGRES_DATABASE,
     POSTGRES_PASSWORD,
     POSTGRES_PORT,

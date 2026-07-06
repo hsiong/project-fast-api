@@ -1,6 +1,6 @@
 import os
 
-from util.env_util import load_env
+from core.util.env_util import load_env
 
 CONFIG_FILE_PATH = os.getenv("CONFIG_FILE_PATH", ".env.dev")
 print(
