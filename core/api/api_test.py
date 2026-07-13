@@ -1,7 +1,7 @@
 # app/api/profile.py
 from fastapi import APIRouter, Request
 
-from dto.result_bean import Result
+from core.dto.result_bean import Result
 from core.util.bean_util import dict_to_bean
 
 router = APIRouter()
