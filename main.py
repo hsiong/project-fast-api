@@ -3,7 +3,7 @@
 import uvicorn
 from fastapi import FastAPI
 
-from core.api import router as test_router
+from core.api.api_test import router as test_router
 from core.config.settings import SERVICE_PORT
 from core.init.log import setup_logging
 from core.init.postgres_init import init_postgres
