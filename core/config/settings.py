@@ -18,3 +18,9 @@ POSTGRES_PORT = env.get("POSTGRES_PORT", 5432)
 POSTGRES_DATABASE = env.get("POSTGRES_DATABASE", "test")
 POSTGRES_USERNAME = env.get("POSTGRES_USERNAME", "postgres")
 POSTGRES_PASSWORD = env.get("POSTGRES_PASSWORD", "postgres")
+
+
+OLLAMA_CHAT_URL = env.get("OLLAMA_CHAT_URL", "http://127.0.0.1:11434/api/chat")
+OLLAMA_GENERATE_URL = env.get(
+    "OLLAMA_GENERATE_URL", "http://127.0.0.1:11434/api/generate"
+)
