@@ -3,7 +3,6 @@
 import uvicorn
 from fastapi import FastAPI
 
-from core.api.api_test import router as test_router
 from core.config.settings import SERVICE_PORT
 from core.init.log import setup_logging
 from core.init.postgres_init import init_postgres
@@ -12,13 +11,8 @@ from core.init.postgres_init import init_postgres
 def create_app() -> FastAPI:
 	app = FastAPI(title="Aesthetic Customer Value Engine")
 	
-	app.include_router(test_router, prefix="/api", tags=["attendance"])
 	# app.include_router(test_router, prefix="/api", tags=["test"])
 	
-	return app
-
-
-def init(app: FastAPI) -> None:
 	setup_logging()  # 初始化日志
 	init_postgres(app)
 	
@@ -28,10 +22,11 @@ def init(app: FastAPI) -> None:
 	# app.attendanceStatisticsService = AttendanceStatisticsService(
 	# 	app.attendanceStatisticsRepo
 	# )
+	
+	return app
 
 
 app = create_app()
-init(app)
 
 if __name__ == "__main__":
 	# uvicorn.run(
